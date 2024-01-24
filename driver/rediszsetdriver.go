@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/libi/dcron/dlog"
+	"github.com/edisonwong520/dcron/dlog"
 	"github.com/redis/go-redis/v9"
 )
 

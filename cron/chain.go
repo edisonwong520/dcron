@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/libi/dcron/dlog"
+	"github.com/edisonwong520/dcron/dlog"
 )
 
 // JobWrapper decorates the given Job with some behavior.

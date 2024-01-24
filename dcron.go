@@ -9,9 +9,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/libi/dcron/cron"
-	"github.com/libi/dcron/dlog"
-	"github.com/libi/dcron/driver"
+	"github.com/edisonwong520/dcron/cron"
+	"github.com/edisonwong520/dcron/dlog"
+	"github.com/edisonwong520/dcron/driver"
 )
 
 const (

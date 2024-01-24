@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/libi/dcron"
-	"github.com/libi/dcron/dlog"
-	"github.com/libi/dcron/driver"
-	examplesCommon "github.com/libi/dcron/examples/common"
+	"github.com/edisonwong520/dcron"
+	"github.com/edisonwong520/dcron/dlog"
+	"github.com/edisonwong520/dcron/driver"
+	examplesCommon "github.com/edisonwong520/dcron/examples/common"
 	"github.com/redis/go-redis/v9"
 )
 

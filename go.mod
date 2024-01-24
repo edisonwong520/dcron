@@ -1,4 +1,4 @@
-module github.com/libi/dcron
+module github.com/edisonwong520/dcron
 
 go 1.19
 

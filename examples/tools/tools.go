@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 
-	examplesCommon "github.com/libi/dcron/examples/common"
+	examplesCommon "github.com/edisonwong520/dcron/examples/common"
 	"github.com/redis/go-redis/v9"
 )
 

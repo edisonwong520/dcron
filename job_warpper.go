@@ -1,6 +1,6 @@
 package dcron
 
-import "github.com/libi/dcron/cron"
+import "github.com/edisonwong520/dcron/cron"
 
 // Job Interface
 type Job interface {
