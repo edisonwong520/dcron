@@ -9,6 +9,19 @@ Dcron
 
 a lightweight distributed job scheduler library based on redis or etcd
 
+### Declarations
+Why fork this repo? Because we use etcd v2 in production environment. As we all known, etcd v2 client module is no longer maintained, there are lots of annoying issues, eg:   
+```shell
+module google.golang.org/grpc@latest found (v1.61.0), but does not contain package google.golang.org/grpc/naming  
+
+github.com/coreos/etcd/pkg/srv: module github.com/coreos/etcd@latest found (v2.3.8+incompatible), but does not contain package github.com/coreos/etcd/pkg/srv
+
+... but does not contain package google.golang.org/grpc/credentials/insecure
+
+```  
+When some repos use google.golang.org/grpc lower version (like v1.26.0, it contains grpc/naming package) but another repo need higher version(v1.61.0), so it's hard to put it together. Meanwhile you need to replace bbolt, grpc and get things done. Finally I remove the etcd part away from dron and adaptive for our code.   
+  
+By the way, etcd package in go mod is shit and hinder the go community development. The author didn't care about package and refuse to embrace go mod. Sad and disaster.
 ### Theory
 
 Use redis or etcd to sync the services list and the state of services. Use consistent-hash
