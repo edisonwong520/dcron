@@ -10,7 +10,12 @@ Dcron
 a lightweight distributed job scheduler library based on redis or etcd
 
 ### Declarations
-Why fork this repo? Because we use etcd v2 in production environment. As we all known, etcd v2 client module is no longer maintained, there are lots of annoying issues, eg:   
+
+Why fork this repo? Because we use etcd v2 in production environment. This repository contains v3's etcd, which is
+incompatible, so I removed support for etcd and keep the repo simple.
+
+As we all known, etcd v2 client module is no longer maintained, there are lots of annoying issues, eg:
+
 ```shell
 module google.golang.org/grpc@latest found (v1.61.0), but does not contain package google.golang.org/grpc/naming  
 
@@ -19,9 +24,15 @@ github.com/coreos/etcd/pkg/srv: module github.com/coreos/etcd@latest found (v2.3
 ... but does not contain package google.golang.org/grpc/credentials/insecure
 
 ```  
-When some repos use google.golang.org/grpc lower version (like v1.26.0, it contains grpc/naming package) but another repo need higher version(v1.61.0), so it's hard to put it together. Meanwhile you need to replace bbolt, grpc and get things done. Finally I remove the etcd part away from dron and adaptive for our code.   
-  
-By the way, etcd package in go mod is shit and hinder the go community development. The author didn' t care about package and refuse to embrace go mod. Sad and disaster.
+
+When some repos use google.golang.org/grpc lower version (like v1.26.0, it contains grpc/naming package) but another
+repo need higher version(v1.61.0), so it's hard to put it together. Meanwhile you need to replace bbolt, grpc and get
+things done. Finally I remove the etcd part away from dron and adaptive for our code (it's hard to migrate etcd v2 to v3
+in production environment).
+
+By the way, etcd package in go mod is shit and hinder the go community development. The author didn' t care about
+package and refuse to embrace go mod. Disaster.
+
 ### Theory
 
 Use redis or etcd to sync the services list and the state of services. Use consistent-hash
@@ -29,37 +40,51 @@ to select the node which can execute the task.
 
 ### Why not use distributed-lock?
 
-If use distributed-lock to implement it. I will depends on the system-time of each node. There are some problems when the system-time is not synchronous: 
-1. If the task executing time is shorter than the system time, the task will be excuted again. (some node unlock after execution, but the lock will be locked by the other node which reach the execution time)
+If use distributed-lock to implement it. I will depends on the system-time of each node. There are some problems when
+the system-time is not synchronous:
 
-2. Whatever there is only a little miss in system time, the most fast node will catch the lock in the first time. It will cause a thing that all the task will be executed only by the most fast node.
+1. If the task executing time is shorter than the system time, the task will be excuted again. (some node unlock after
+   execution, but the lock will be locked by the other node which reach the execution time)
 
-### Features 
-- Robustness: The node assignment of tasks does not depend on the system time, so the system time error between nodes can also ensure uniform distribution and single node execution.
+2. Whatever there is only a little miss in system time, the most fast node will catch the lock in the first time. It
+   will cause a thing that all the task will be executed only by the most fast node.
+
+### Features
+
+- Robustness: The node assignment of tasks does not depend on the system time, so the system time error between nodes
+  can also ensure uniform distribution and single node execution.
 - Load Balance: Distribute tasks evenly according to task and node.
-- Seamless capacity extention ：If the load of the task node is too large, some tasks will be automatically migrated to the new service after the new server is started directly to achieve seamless capacity extention. 
-- Failover: If a single node fails, the task will be automatically transferred to other normal nodes after 10 seconds. 
-- Unique: The same task in the same service will only start a single running instance, and will not be executed repeatedly. 
+- Seamless capacity extention ：If the load of the task node is too large, some tasks will be automatically migrated to
+  the new service after the new server is started directly to achieve seamless capacity extention.
+- Failover: If a single node fails, the task will be automatically transferred to other normal nodes after 10 seconds.
+- Unique: The same task in the same service will only start a single running instance, and will not be executed
+  repeatedly.
 - Customized storage: add the node storage mode by implementing the driver interface.
 - Automatic recovery: if the process restart, the jobs which **have been store** will be recovered into memory.
 
 ### Get Started
 
-1. Create redisDriver instance, set the `ServiceName` and initialize `dcron`. The `ServiceName` will defined the same task unit.
+1. Create redisDriver instance, set the `ServiceName` and initialize `dcron`. The `ServiceName` will defined the same
+   task unit.
+
 ```golang
 redisCli := redis.NewClient(&redis.Options{
-  Addr: DefaultRedisAddr,
+Addr: DefaultRedisAddr,
 })
 drv := driver.NewRedisDriver(redisCli)
 dcron := NewDcron("server1", drv)
 ```
+
 2. Use cron-language to add task, you should set the `TaskName`, the `TaskName` is the primary-key of each task.
+
 ```golang
-dcron.AddFunc("test1","*/3 * * * *",func(){
-  fmt.Println("execute test1 task",time.Now().Format("15:04:05"))
+dcron.AddFunc("test1", "*/3 * * * *", func (){
+fmt.Println("execute test1 task", time.Now().Format("15:04:05"))
 })
 ```
+
 3. Begin the task
+
 ```golang
 // you can use Start() or Run() to start the dcron.
 // unblocking start.
@@ -70,26 +95,31 @@ dcron.Run()
 ```
 
 ### Example
+
 - [examples](examples/)
 - [example_app](https://github.com/dxyinme/dcron_example_app)
 
-
 ### More configurations.
 
-Dcron is based on https://github.com/robfig/cron, use `NewDcron` to initialize `Dcron`, the arg after the second argv will be passed to `cron`
+Dcron is based on https://github.com/robfig/cron, use `NewDcron` to initialize `Dcron`, the arg after the second argv
+will be passed to `cron`
 
 For example, if you want to set the cron eval in second-level, you can use like that:
+
 ```golang
-dcron := NewDcron("server1", drv,cron.WithSeconds())
+dcron := NewDcron("server1", drv, cron.WithSeconds())
 ```
 
-Otherwise, you can sue `NewDcronWithOption` to initialize, to set the logger or others. Optional configuration can be referred to: https://github.com/libi/dcron/blob/master/option.go
+Otherwise, you can sue `NewDcronWithOption` to initialize, to set the logger or others. Optional configuration can be
+referred to: https://github.com/libi/dcron/blob/master/option.go
 
 ### ServiceName
 
-The `ServiceName` is used to define the same set of tasks, which can be understood as the boundary of task allocation and scheduling. 
+The `ServiceName` is used to define the same set of tasks, which can be understood as the boundary of task allocation
+and scheduling.
 
-Multiple nodes using the same service name will be considered as the same task group. Tasks in the same task group will be evenly distributed to each node in the group and will not be executed repeatedly.
+Multiple nodes using the same service name will be considered as the same task group. Tasks in the same task group will
+be evenly distributed to each node in the group and will not be executed repeatedly.
 
 ### Star history
 
