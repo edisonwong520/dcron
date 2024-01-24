@@ -4,7 +4,6 @@ import (
 	"context"
 
 	redis "github.com/redis/go-redis/v9"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // There is only one driver for one dcron.
@@ -19,7 +18,7 @@ type DriverV2 interface {
 	// get nodes
 	GetNodes(ctx context.Context) (nodes []string, err error)
 
-	// register node to remote server (like etcd/redis),
+	// register node to remote server (like redis),
 	// will create a goroutine to keep the connection.
 	// And then continue for other work.
 	Start(ctx context.Context) (err error)
@@ -32,10 +31,6 @@ type DriverV2 interface {
 
 func NewRedisDriver(redisClient *redis.Client) DriverV2 {
 	return newRedisDriver(redisClient)
-}
-
-func NewEtcdDriver(etcdCli *clientv3.Client) DriverV2 {
-	return newEtcdDriver(etcdCli)
 }
 
 func NewRedisZSetDriver(redisClient *redis.Client) DriverV2 {

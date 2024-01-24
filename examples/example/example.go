@@ -17,7 +17,6 @@ import (
 
 const (
 	DriverType_REDIS = "redis"
-	DriverType_ETCD  = "etcd"
 )
 
 var (
